@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const passport = require("passport");
 const session = require("express-session");
 const passportLocalMongoose = require("passport-local-mongoose");
+// const _ = require('lodash');
 const mongoose = require("mongoose");
 
 const app = express();
@@ -85,12 +86,14 @@ const mainlistSchema = new mongoose.Schema({
     qty: Number
   }
 });
-const MainList = new mongoose.model("MainList", mainlistSchema);
+// const MainList = new mongoose.model("MainList", mainlistSchema);
 
+var newTitle = "";
 var itemToAdd = "";
-const listItem = {};
+var listItem = [];
 
-const typeList = [];
+const itemList = [];
+const mainlist = [];
 
 //**********************************************************************
 
@@ -108,8 +111,58 @@ const DBLoadItem = function() {
   });
 }
 
+const DBLoadMainList = function() {
+  return new Promise(function(resolve, reject) {
+    MainList = new mongoose.model("MainList", mainlistSchema);
+    if (MainList.length > 0) {
+      // console.log("Item", Item);
+      resolve(null, "[MainList " + MainList.length + "]");
+    } else {
+      // console.log("MainList", MainList);
 
-function FillTypesD() {
+      reject("MainList Failed", null);
+    }
+  });
+}
+
+function FillMain() {
+  return new Promise(function(resolve, reject) {
+    MainList.find({}, function(err, ids) {
+      // console.log('ids', ids.length);
+
+      if (ids.length != 0) {
+        ids.forEach(function(i) {
+          // console.log('i', i);
+          // console.log('i.item', i.item);
+          // console.log('i.type', i.type);
+
+          const mulval = {
+            name: i.name,
+            createdDate: i.createdDate,
+            checkedDate: i.checkedDate,
+            closed: i.closed,
+            listitem: i.listitem
+            // {
+            //   item: String,
+            //   qty: Number
+            // }
+          }
+          // console.log('mulval', mulval);
+
+          mainlist.push(mulval);
+        });
+        mainlist.sort();
+        // console.log('typeList' + typeList);
+        resolve(null, 'mainlist ' + mainlist);
+      } else {
+        // console.log('typeList', "Failed");
+        reject("mainlist Failed " + ids.length, null);
+      }
+    });
+  });
+}
+
+function FillItem() {
   return new Promise(function(resolve, reject) {
     Item.find({}, function(err, ids) {
       // console.log('ids', ids.length);
@@ -128,14 +181,14 @@ function FillTypesD() {
           }
           // console.log('mulval', mulval);
 
-          typeList.push(mulval);
+          itemList.push(mulval);
         });
-        typeList.sort();
+        itemList.sort();
         // console.log('typeList' + typeList);
-        resolve(null, 'typeList ' + typeList);
+        resolve(null, 'itemList ' + itemList);
       } else {
         // console.log('typeList', "Failed");
-        reject("typeList Failed", null);
+        reject("itemList Failed " + ids.length, null);
       }
     });
   });
@@ -153,17 +206,35 @@ app.listen(port, function() {
       console.log("LoadDB err", err);
     } else {
       // console.log("msg", msg);
-      return DBLoadItem();
+      DBLoadItem().catch(function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+      DBLoadMainList().catch(function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
     }
   }).then(function(err, msg) {
     if (err) {
-      console.log("DBLoadItem err", err);
+      console.log("err", err);
     } else {
-      return FillTypesD();
+      FillItem().catch(function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+      FillMain().catch(function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
     }
   }).catch(function(err) {
     if (err) {
-      console.log("FillTypesD err", err);
+      console.log("err", err);
     }
   });
 });
@@ -176,6 +247,14 @@ app.listen(port, function() {
 // badgelist: null,
 // useChecked: true,
 // }
+app.get("/error", function(req, res) {
+  res.render("error.ejs", {
+    title: "Bock-b-gock",
+    button: false,
+    buttonLink: "",
+    buttonTitle: "",
+  });
+});
 
 app.get("/", function(req, res) {
   res.render("login.ejs");
@@ -238,27 +317,60 @@ app.all("/title", function(req, res) {
   });
 });
 
-app.get("/quantity", function(req, res) {
-  if (itemToAdd.length > 0) {
-    res.render("quantity.ejs", {
-      title: itemToAdd,
-      button: true,
-      buttonLink: "/menu",
-      buttonTitle: "Back",
-      item: itemToAdd
-    });
+app.post("/itemlist", function(req, res) {
+  const selection = req.body.title;
+  if (selection.length <= 1) {
+    ResError(res, "Alert", "Title " + selection + " is too short", "/title");
+    // alert("Title " + selection + " is too short");
+    // res.redirect("/title");
   } else {
-    res.redirect("/error");
+    console.log("selection", selection);
+
+    MainList.find({
+      name: selection
+    }, function(err, ids) {
+      if (ids.length != 0) {
+        alert("List already exists with that Title");
+        // todo: test with a redirect
+      } else {
+        newTitle = selection;
+        res.redirect("/itemselectionlist");
+      }
+    });
   }
 });
 
-app.get("/error", function(req, res) {
-  res.render("error.ejs", {
-    title: "Bock-b-gock",
-    button: false,
-    buttonLink: "",
-    buttonTitle: "",
-  });
+app.get("/itemselectionlist", function(req, res) {
+  if (newTitle.length > 0) {
+    res.render("list.ejs", {
+      title: newTitle,
+      button: true,
+      buttonLink: "/menu",
+      buttonTitle: "Back",
+      badgelist: null,
+      useChecked: true,
+      list: itemList
+    });
+  }
+});
+
+app.get("/activelist", function(req, res){
+  console.log("mainlist.length", mainlist.length);
+  if(mainlist.length > 0){
+    // display list
+    res.render("list.ejs", {
+      title: "Shopping List",
+      button: true,
+      buttonLink: "/menu",
+      buttonTitle: "Back",
+      badgelist: null,
+      useChecked: true,
+      list: mainlist
+    });
+  } else {
+    // alert no lists found
+    ResError(res, "Alert", "No Active Lists", "/menu");
+  }
 });
 
 app.get("/list", function(req, res) {
@@ -267,44 +379,101 @@ app.get("/list", function(req, res) {
   // } else {
   //   res.render("/login");
   // }
+  var nt = "Bee-gock!";
+  var bl = null;
+  var il = null;
+
+  if(newTitle.length > 0){
+    nt = newTitle;
+  }
+
+  if(listItem.length > 0){
+    bl = listItem;
+  }
+
+  if(itemList.length > 0){
+    il = itemList;
+  }
+
+
   res.render("list.ejs", {
-    title: "Active List",
+    title: nt,
     button: true,
     buttonLink: "/menu",
     buttonTitle: "Back",
-    badgelist: null,
+    badgelist: bl,
     useChecked: true,
-    list: typeList
+    list: il
   });
 });
 
 app.post('/add', function(req, res) {
   const selection = req.body.checkbox;
 
-  console.log("add/selection", req.body.checkbox);
+  if (selection.length > 0) {
+    itemList.find(function(found) {
+      console.log("selection", selection);
 
-  itemToAdd = selection;
-
-  res.redirect("/quantity");
-  // find in selection and check and add to list
-
-  // {
-  //   _id: selection,
-  //   item: selection,
-  //   qty: Number
-  // }
-
-
-
-
-
-
-
+      if (found._id == selection) {
+        found.checked = true;
+        itemToAdd = found.item;
+        res.redirect("/quantity");
+      } else {
+        console.log("ADD", "didnt find it");
+        // res.redirect("/list");
+      }
+    });
+  // } else {
+  //   res.redirect("/list");
+  }
 });
 
-// app.get("/list", function(req, res){
-//   res.render("list.ejs");
-// });
+app.get("/quantity", function(req, res) {
+  // if (itemToAdd.length > 0) {
+  res.render("quantity.ejs", {
+    title: itemToAdd,
+    button: true,
+    buttonLink: "/menu",
+    buttonTitle: "Back",
+    item: itemToAdd
+  });
+  // } else {
+  //   res.redirect("/error");
+  // }
+});
+
+app.post("/newItem", function(req, res) {
+  const qty = req.body.title;
+
+  console.log("qty", qty);
+
+  if (qty > 0) {
+
+    // make entity to add to list
+    const addvar = {
+      item: itemToAdd,
+      quantity: qty
+    }
+
+    listItem.push(addvar);
+
+  } else {
+    console.log("Quantity was to low");
+    alert("Quantity of " + qty + " was too low");
+  }
+  // call redirect back to full list
+  res.redirect("/list");
+});
+
+const ResError = function(res, title, message, backlink) {
+  res.render("alert.ejs", {
+    title: title,
+    button: true,
+    buttonLink: backlink,
+    buttonTitle: "Okay",
+    error: message
+  });
+}
 
 // app.post('/:something', function(req, res) {
 //   const customListName = req.params.something;
@@ -327,20 +496,20 @@ app.post('/add', function(req, res) {
 //   }
 // });
 
-app.post('/:something', function(req, res) {
-  const customListName = req.params.something;
-  const selection = req.body.title;
-
-  console.log("customListName", customListName);
-  console.log("selection", selection);
-
-  switch (customListName) {
-    // case "newtitle":
-    //   title = selection;
-    //   break;
-    default:
-  }
-});
+// app.post('/:something', function(req, res) {
+//   const customListName = req.params.something;
+//   const selection = req.body.title;
+//
+//   console.log("customListName", customListName);
+//   console.log("selection", selection);
+//
+//   switch (customListName) {
+//     // case "newtitle":
+//     //   title = selection;
+//     //   break;
+//     default:
+//   }
+// });
 
 // function StringBreakDown(str) {
 //   // var str = "sort-list-type";
