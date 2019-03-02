@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": { "test": "echo \"Error: no test specified\" && exit 1" },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": "10.15.0"
+  },
   "dependencies": {
     "body-parser": "^1.18.3",
     "dotenv": "^6.2.0",
@@ -19,8 +20,5 @@
     "mongoose": "^5.4.16",
     "passport": "^0.4.0",
     "passport-local-mongoose": "^5.0.1"
-  },
-    "engines": {
-    "node": "10.14.1"
-  },
+  }
 }
