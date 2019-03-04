@@ -60,18 +60,20 @@
     <table class="table table-striped table-sm">
       <thead>
         <tr>
-          <th>
+          <th class="item-header">
             Add
           </th>
-          <form class="header" action="/sort-list-item" method="post">
-            <th class="item">Item
+          <form class="header" action="/sortMe" method="post">
+            <th class="item" >Item
+              <button class="btn btn-primary sm" type="submit" name="title" value="1"><img class="img-sm" src="sort-26.png" alt="SomeAlternateText"></button>
               <!-- <button type="button" class="btn btn-primary btn-sm" type="submit"><img class="sm" src="sort-26.png"></button></th> -->
-              <input class="sm" type="image" src="sort-26.png" alt="Submit">
-          </form>
-          <form class="header" action="/sort-list-type" method="post">
-            <th class="type">Type
+              <!-- <input class="sm" type="image" name="title" value="2" src="sort-26.png" onClick="this.form.submit()"> -->
+          <!-- </form>
+          <form class="header" action="/sortcol3" method="post"> -->
+            <th class="type" name="col">Type
               <!-- <button type="button" class="btn btn-primary btn-sm" type="submit"><img class="sm" src="sort-26.png"></button></th> -->
-              <input class="sm" type="image" src="sort-26.png" alt="Submit">
+              <button class="btn btn-primary sm" type="submit" name="title" value="2"><img class="img-sm" src="sort-26.png" alt="SomeAlternateText"></button>
+              <!-- <input class="sm" type="image" src="sort-26.png" alt="submit"> -->
           </form>
           <!-- <th>Item</th> -->
           <!-- <th>Type</th> -->
@@ -85,7 +87,7 @@
           <form class="useChecked" action="/add" method="post">
             <td>
               <% if( useChecked ) { %>
-              <input class="inputCheckbox" value=<%=i._id %> type="checkbox" name="checkbox" onChange="this.form.submit()">
+              <input class="inputCheckbox" type="checkbox" name="checkbox" onChange="this.form.submit()" value=<%= i._id %>>
 
               <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal"> -->
               <!-- Launch demo modal

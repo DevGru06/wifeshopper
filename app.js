@@ -81,10 +81,7 @@ const mainlistSchema = new mongoose.Schema({
   createdDate: Date,
   checkedDate: Date,
   closed: Boolean,
-  listitem: {
-    item: String,
-    qty: Number
-  }
+  listitem: {}
 });
 // const MainList = new mongoose.model("MainList", mainlistSchema);
 
@@ -94,6 +91,21 @@ var listItem = [];
 
 const itemList = [];
 const mainlist = [];
+
+var alertTitle = "";
+var alertMessage = "";
+
+const buttonOne = {
+  button: true,
+  buttonLink: "/menu",
+  buttonTitle: "Confirm",
+}
+
+const buttonTwo = {
+  button: true,
+  buttonLink: "/menu",
+  buttonTitle: "Back",
+}
 
 //**********************************************************************
 
@@ -147,11 +159,18 @@ function FillMain() {
             //   qty: Number
             // }
           }
-          // console.log('mulval', mulval);
+          console.log('mulval', mulval);
 
           mainlist.push(mulval);
         });
-        mainlist.sort();
+        // mainlist.sort(function(a, b) {
+        //   console.log(a.item, b.item);
+        //   if(a.item === b.item){
+        //     return 0;
+        //   } else {
+        //     return (a.item < b.item) ? -1 : 1;
+        //   }
+        // });
         // console.log('typeList' + typeList);
         resolve(null, 'mainlist ' + mainlist);
       } else {
@@ -161,6 +180,7 @@ function FillMain() {
     });
   });
 }
+//res.redirect(req.get('referer'));
 
 function FillItem() {
   return new Promise(function(resolve, reject) {
@@ -169,21 +189,27 @@ function FillItem() {
 
       if (ids.length != 0) {
         ids.forEach(function(i) {
-          // console.log('i', i);
-          // console.log('i.item', i.item);
-          // console.log('i.type', i.type);
 
-          const mulval = {
-            _id: i._id,
-            item: i.item,
-            type: i.type,
-            checked: false
+          if (i.item.length > 0) {
+            const mulval = {
+              _id: i._id,
+              item: i.item,
+              type: i.type,
+              checked: false
+            }
+            // console.log('mulval', mulval);
+            itemList.push(mulval);
           }
-          // console.log('mulval', mulval);
-
-          itemList.push(mulval);
         });
-        itemList.sort();
+        itemList.sort(function(a, b) {
+          if (a.item < b.item) {
+            return -1;
+          }
+          if (a.item > b.item) {
+            return 1;
+          }
+          return 0;
+        });
         // console.log('typeList' + typeList);
         resolve(null, 'itemList ' + itemList);
       } else {
@@ -288,7 +314,7 @@ app.get("/logout", function(req, res) {
 app.post("/register", function(req, res) {
   res.render("register.ejs");
   // User.register({username: req.body.username}, req.body.password, function(err, user) {
-  //   if(err){
+  //   if(err){************************************************
   //     console.log(err);
   //     res.redirect("/register");
   //   }else {
@@ -296,111 +322,136 @@ app.post("/register", function(req, res) {
   //       res.redirect("/secrets");
   //     });
   //   }
-  // });
+  // });*********************************************************
 });
+
+//**********************************************************************
 
 app.all("/menu", function(req, res) {
+  buttonOne.button = false;
+  buttonTwo.button = false;
   res.render("menu.ejs", {
     title: "Menu",
-    button: false,
-    buttonLink: "",
-    buttonTitle: ""
+    buttonOne: buttonOne,
+    buttonTwo: buttonTwo
   });
 });
+
+//**********************************************************************
 
 app.all("/title", function(req, res) {
+  buttonOne.button = true,
+    buttonOne.buttonLink = "/menu",
+    buttonOne.buttonTitle = "Back",
+    buttonTwo.button = false;
+
   res.render("title.ejs", {
     title: "Title",
-    button: true,
-    buttonLink: "/menu",
-    buttonTitle: "Back",
+    buttonOne: buttonOne,
+    buttonTwo: buttonTwo
   });
 });
 
-app.post("/itemlist", function(req, res) {
+app.post("/title/itemlist", function(req, res) {
   const selection = req.body.title;
+  console.log("selection", selection);
+
   if (selection.length <= 1) {
-    ResError(res, "Alert", "Title " + selection + " is too short", "/title");
-    // alert("Title " + selection + " is too short");
-    // res.redirect("/title");
+    buttonOne.button = true;
+    buttonOne.buttonTitle = "Back";
+    buttonOne.buttonLink = "/title"
+
+    alertTitle = "Alert";
+    alertMessage = "Title " + selection + " is too short";
+
+    // ResError(res, "Alert", "Title " + selection + " is too short", "/title");
+    res.redirect("/alert");
   } else {
-    console.log("selection", selection);
+    // console.log("selection", selection);
 
     MainList.find({
       name: selection
     }, function(err, ids) {
       if (ids.length != 0) {
-        alert("List already exists with that Title");
+        // alert("List already exists with that Title");
+        console.log("todo: test with a redirect");
         // todo: test with a redirect
       } else {
         newTitle = selection;
-        res.redirect("/itemselectionlist");
+        res.redirect("/list");
       }
     });
   }
 });
 
-app.get("/itemselectionlist", function(req, res) {
-  if (newTitle.length > 0) {
-    res.render("list.ejs", {
-      title: newTitle,
-      button: true,
-      buttonLink: "/menu",
-      buttonTitle: "Back",
-      badgelist: null,
-      useChecked: true,
-      list: itemList
-    });
-  }
-});
+//**********************************************************************
 
-app.get("/activelist", function(req, res){
+app.get("/activelist", function(req, res) {
   console.log("mainlist.length", mainlist.length);
-  if(mainlist.length > 0){
-    // display list
+  if (mainlist.length > 0) {
+    buttonOne.button = true;
+    buttonOne.buttonTitle = "Back";
+    buttonOne.buttonLink = "/menu"
+
+    buttonTwo.button = true;
+    buttonTwo.buttonTitle = "Refresh";
+    buttonTwo.buttonLink = "/save/refresh";
+
     res.render("list.ejs", {
       title: "Shopping List",
-      button: true,
-      buttonLink: "/menu",
-      buttonTitle: "Back",
+      buttonOne: buttonOne,
+      buttonTwo: buttonTwo,
       badgelist: null,
       useChecked: true,
       list: mainlist
     });
   } else {
     // alert no lists found
-    ResError(res, "Alert", "No Active Lists", "/menu");
+
+    buttonOne.button = true;
+    buttonOne.buttonTitle = "Back";
+    buttonOne.buttonLink = "/menu"
+
+    alertTitle = "Alert";
+    alertMessage = "No Active Lists";
+
+    // ResError(res, "Alert", "Title " + selection + " is too short", "/title");
+    res.redirect("/alert");
+
+    // ResError(res, "Alert", "No Active Lists", "/menu");
   }
 });
 
-app.get("/list", function(req, res) {
-  // if (req.isAuthenticated()){
-  //   res.render("/secrets");
-  // } else {
-  //   res.render("/login");
+app.all("/list", function(req, res) {
+  // if (req.isAuthenticated()){***********
+  //   res.render("/secrets");**********
+  // } else {***********
+  //   res.render("/login");*****************
   // }
   var nt = "Bee-gock!";
   var bl = null;
   var il = null;
 
-  if(newTitle.length > 0){
+  var b1 = buttonOne;
+  var b2 = buttonTwo;
+
+  if (newTitle.length > 0) {
     nt = newTitle;
   }
 
-  if(listItem.length > 0){
+  if (listItem.length > 0) {
     bl = listItem;
   }
 
-  if(itemList.length > 0){
+  if (itemList.length > 0) {
     il = itemList;
   }
 
 
   res.render("list.ejs", {
     title: nt,
-    button: true,
-    buttonLink: "/menu",
-    buttonTitle: "Back",
+    buttonOne: buttonOne,
+    buttonTwo: buttonTwo,
     badgelist: bl,
     useChecked: true,
     list: il
@@ -423,23 +474,25 @@ app.post('/add', function(req, res) {
         // res.redirect("/list");
       }
     });
-  // } else {
-  //   res.redirect("/list");
+    // } else {
+    //   res.redirect("/list");
   }
 });
 
 app.get("/quantity", function(req, res) {
-  // if (itemToAdd.length > 0) {
+
+  buttonOne.button = true;
+  buttonOne.buttonTitle = "Back";
+  buttonOne.buttonLink = "/list"
+
+  buttonTwo.button = false;
+
   res.render("quantity.ejs", {
     title: itemToAdd,
-    button: true,
-    buttonLink: "/menu",
-    buttonTitle: "Back",
+    buttonOne: buttonOne,
+    buttonTwo: buttonTwo,
     item: itemToAdd
   });
-  // } else {
-  //   res.redirect("/error");
-  // }
 });
 
 app.post("/newItem", function(req, res) {
@@ -459,94 +512,109 @@ app.post("/newItem", function(req, res) {
 
   } else {
     console.log("Quantity was to low");
-    alert("Quantity of " + qty + " was too low");
+
+    ///****************** todo fix this, cant redirect from post to get
+    // buttonOne.button = true;
+    // buttonOne.buttonTitle = "Back";
+    // buttonOne.buttonLink = "/quantity"
+    //
+    // alertTitle = "Alert";
+    // alertMessage = "Quantity of " + qty + " was too low";
+    //
+    // res.redirect("/alert");
   }
   // call redirect back to full list
+
+  buttonOne.button = true;
+  buttonOne.buttonLink = "/menu";
+  buttonOne.buttonTitle = "Menu";
+  buttonTwo.button = true;
+  buttonTwo.buttonLink = "/save/list";
+  buttonTwo.buttonTitle = "Save";
+
   res.redirect("/list");
 });
 
-const ResError = function(res, title, message, backlink) {
-  res.render("alert.ejs", {
-    title: title,
-    button: true,
-    buttonLink: backlink,
-    buttonTitle: "Okay",
-    error: message
-  });
-}
+app.post("/save/list", function(req, res) {
+  if (newTitle.length > 0 && listItem.length > 0) {
+    const newb = new MainList();
 
-// app.post('/:something', function(req, res) {
-//   const customListName = req.params.something;
-//   const selection = req.body.selection;
-//
-//   switch (customListName) {
-//     case "updatefilter":
-//       break;
-//     case "updatetype":
-//     case "typelookup":
-//       break;
-//     case "updateordernum":
-//     case "orderlookup":
-//        break;
-//     case "updatevendor":
-//     break;
-//     case "inprogress":
-//       break;
-//     default:
-//   }
-// });
+    newb.name = newTitle;
+    newb.createdDate = Date.now();
+    newb.checkedDate = new Date(1111, 11, 11)
+    newb.closed = false;
+    newb.listitem = listItem;
+    newb.save();
+  }
+  console.log("check it");
+});
 
-// app.post('/:something', function(req, res) {
-//   const customListName = req.params.something;
-//   const selection = req.body.title;
-//
-//   console.log("customListName", customListName);
-//   console.log("selection", selection);
-//
-//   switch (customListName) {
-//     // case "newtitle":
-//     //   title = selection;
-//     //   break;
-//     default:
-//   }
-// });
+app.get("/save/refresh", function(req, res) {
+  DBLoadMainList();
+  FillMain();
+  res.redirect("back");
+});
 
-// function StringBreakDown(str) {
-//   // var str = "sort-list-type";
+// const ResError = function(res, title, message, backlink) {
+//   buttonOne.button = true;
+//   buttonOne.buttonLink = backlink;
+//   buttonOne.buttonTitle = "Okay";
 //
-//   const n = str.indexOf("-");
-//   const sub1 = str.substring(0, n);
+//   buttonTwo.button = false;
 //
-//   const subt = str.substring(n + 1, str.length);
-//
-//   const n2 = subt.indexOf("-");
-//   const sub2 = subt.substring(0, n2);
-//
-//   const sub3 = subt.substring(n2 + 1, subt.length);
-//
-//   return {
-//     one: sub1,
-//     two: sub2,
-//     three: sub3
-//   };
+//   res.render("alert.ejs", {
+//     title: title,
+//     buttonOne: buttonOne,
+//     buttonTwo: buttonTwo,
+//     alert: message
+//   });
 // }
 
-// app.get('/:something', function(req, res) {
-//   const customListName = req.params.something;
-//   const selection = req.body.selection;
-//
-//   switch (customListName) {
-//     case "updatefilter":
-//       break;
-//     case "updatetype":
-//     case "typelookup":
-//       break;
-//     case "updateordernum":
-//     case "orderlookup":
-//        break;
-//     case "updatevendor":
-//     case "inprogress":
-//        break;
-//     default:
-//   }
-// });
+app.get("/alert", function(req, res) {
+  buttonTwo.button = false;
+
+  res.render("alert.ejs", {
+    title: alertTitle,
+    buttonOne: buttonOne,
+    buttonTwo: buttonTwo,
+    alert: alertMessage
+  });
+});
+
+app.post('/sortMe', function(req, res) {
+  const col = req.body.title;
+  // console.log("col", col);
+
+  switch (col) {
+    case "1":
+      itemList.sort(function(a, b) {
+        if (a.item < b.item) {
+          return -1;
+        }
+        if (a.item > b.item) {
+          return 1;
+        }
+        return 0;
+      });
+      break;
+    case "2":
+      itemList.sort(function(a, b) {
+        if (a.type < b.type) {
+          return -1;
+        }
+        if (a.type > b.type) {
+          return 1;
+        }
+        if (a.item < b.item) {
+          return -1;
+        }
+        if (a.item > b.item) {
+          return 1;
+        }
+        return 0;
+      });
+      break;
+      // default:
+  }
+  res.redirect("back");
+});

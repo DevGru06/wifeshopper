@@ -7,7 +7,9 @@
   <!-- <meta name="description" content=""> -->
   <!-- <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors"> -->
   <!-- <meta name="generator" content="Jekyll v3.8.5"> -->
-  <title><%= title %></title>
+  <title>
+    <%= title %>
+  </title>
 
   <!-- <link rel="canonical" href="https://getbootstrap.com/docs/4.3/examples/starter-template/"> -->
 
@@ -22,12 +24,22 @@
 
 <body>
   <nav class="navbar navbar-expand-md navbar-dark bg-primary fixed-top">
-    <a class="navbar-brand" href="#"><%= title %></a>
+    <a class="navbar-brand" href="#">
+      <%= title %></a>
 
-    <!-- button -->
-    <% if(button) { %>
-    <form class="form-inline my-2 my-lg-0"  method="post" action=<%= buttonLink %>>
-      <button type="submit" class="btn btn-secondary"><%= buttonTitle %></button>
-    </form>
-    <% } %>
+    <div class="row">
+      <% if(buttonTwo.button) { %>
+      <form class="form-inline my-2 my-lg-0 myMargin" method="get" action=<%=buttonTwo.buttonLink %>>
+        <button type="submit" class="btn btn-secondary">
+          <%= buttonTwo.buttonTitle %></button>
+      </form>
+      <% } %>
+
+      <% if(buttonOne.button) { %>
+      <form class="form-inline my-2 my-lg-0 myMargin" method="get" action=<%=buttonOne.buttonLink %>>
+        <button type="submit" class="btn btn-secondary">
+          <%= buttonOne.buttonTitle %></button>
+      </form>
+      <% } %>
+    </div>
   </nav>
