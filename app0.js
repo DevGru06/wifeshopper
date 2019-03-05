@@ -8,8 +8,6 @@ const passportLocalMongoose = require("passport-local-mongoose");
 // const _ = require('lodash');
 const mongoose = require("mongoose");
 
-const DB = require(__dirname + "/data.js");
-
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -27,6 +25,41 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 //**********************************************************************
+// const options = {
+//   useNewUrlParser: true,
+//   useCreateIndex: true,
+//   useFindAndModify: false,
+//   autoIndex: false, // Don't build indexes
+//   reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
+//   reconnectInterval: 500, // Reconnect every 500ms
+//   poolSize: 10, // Maintain up to 10 socket connections
+//   // If not connected, return errors immediately rather than waiting for reconnect
+//   bufferMaxEntries: 0,
+//   connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
+//   socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+//   family: 4 // Use IPv4, skip trying IPv6
+// };
+//
+// const LoadDB = function() { //REFACTOR ME TO MAKE PROMISE WORK RIGHT mongodb+srv://Admin:Royalty99@orderist-33pfq.mongodb.net/orderdb?retryWrites=true
+//   return new Promise(function(resolve, reject) {
+//     if (mongoose.connection.readyState === 0) {
+//       mongoose.connect('mongodb+srv://Admin:' + process.env.PASSWORD + '@cluster0-k5alh.azure.mongodb.net/shopmedb?retryWrites=true', options).catch((err) => {
+//         console.log(err.stack); //"Error Connecting to the Mongodb Database"
+//       });
+//       mongoose.set("useCreateIndex", true);
+//
+//       if (mongoose.connection.readyState === 0) {
+//         reject("UN-Succesfully Connected to the Mongodb Database", null);
+//       } else {
+//         resolve(null, "Succesfully Connected to the Mongodb Database");
+//       }
+//     } else {
+//       console.log("Already connected");
+//     }
+//   });
+// };
+
+//**********************************************************************
 const userSchema = new mongoose.Schema({
   email: String,
   password: String
@@ -38,22 +71,37 @@ passport.use(User.createStrategy());
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
+// const itemSchema = new mongoose.Schema({
+//   item: String,
+//   type: String
+// });
+//
+// const mainlistSchema = new mongoose.Schema({
+//   name: String,
+//   createdDate: Date,
+//   checkedDate: Date,
+//   closed: Boolean,
+//   listitem: {}
+// });
+// const MainList = new mongoose.model("MainList", mainlistSchema);
+
+
 // all to add an item
 var newTitle = "";
 var itemToAdd = "";
 var listtoAdd = [];
 
-// // the database
-// var itemList = [];
-// var mainList = [];
+// the database
+const itemList = [];
+const mainList = [];
 
 // errors
 var alertTitle = "";
 var alertMessage = "";
 
 var displayList = [];
-// var badgeList = [];
-// var useChecked = true;
+var badgeList = [];
+var useChecked = true;
 
 const buttonOne = {
   button: true,
@@ -66,6 +114,119 @@ const buttonTwo = {
   buttonTitle: "Back",
 }
 
+// //**********************************************************************
+//
+// const DBLoadItem = function() {
+//   return new Promise(function(resolve, reject) {
+//     Item = mongoose.model("items", itemSchema);
+//     if (Item.length > 0) {
+//       // console.log("Item", Item);
+//       resolve(null, "[Item " + Item.length + "]");
+//     } else {
+//       // console.log("Item", Item);
+//
+//       reject("Item Failed", null);
+//     }
+//   });
+// }
+//
+// const DBLoadMainList = function() {
+//   return new Promise(function(resolve, reject) {
+//     MainList = new mongoose.model("MainList", mainlistSchema);
+//     if (MainList.length > 0) {
+//       // console.log("Item", Item);
+//       resolve(null, "[MainList " + MainList.length + "]");
+//     } else {
+//       // console.log("MainList", MainList);
+//
+//       reject("MainList Failed", null);
+//     }
+//   });
+// }
+//
+// function FillMain() {
+//   return new Promise(function(resolve, reject) {
+//     MainList.find({}, function(err, ids) {
+//       // console.log('ids', ids.length);
+//
+//       if (ids.length != 0) {
+//         ids.forEach(function(i) {
+//           // console.log('i', i);
+//           // console.log('i.item', i.item);
+//           // console.log('i.type', i.type);
+//
+//           const mulval = {
+//             name: i.name,
+//             createdDate: i.createdDate,
+//             checkedDate: i.checkedDate,
+//             closed: i.closed,
+//             listitem: i.listitem
+//             // {
+//             //   item: String,
+//             //   qty: Number
+//             // }
+//           }
+//           // console.log('mulval', mulval);
+//
+//           mainList.push(mulval);
+//         });
+//         // mainList.sort(function(a, b) {
+//         //   console.log(a.item, b.item);
+//         //   if(a.item === b.item){
+//         //     return 0;
+//         //   } else {
+//         //     return (a.item < b.item) ? -1 : 1;
+//         //   }
+//         // });
+//         // console.log('typeList' + typeList);
+//         resolve(null, 'mainList ' + mainList);
+//       } else {
+//         // console.log('typeList', "Failed");
+//         reject("mainList Failed " + ids.length, null);
+//       }
+//     });
+//   });
+// }
+// //res.redirect(req.get('referer'));
+//
+// function FillItem() {
+//   return new Promise(function(resolve, reject) {
+//     Item.find({}, function(err, ids) {
+//       // console.log('ids', ids.length);
+//
+//       if (ids.length != 0) {
+//         ids.forEach(function(i) {
+//
+//           if (i.item.length > 0) {
+//             const mulval = {
+//               _id: i._id,
+//               item: i.item,
+//               type: i.type,
+//               checked: false
+//             }
+//             // console.log('mulval', mulval);
+//             itemList.push(mulval);
+//           }
+//         });
+//         itemList.sort(function(a, b) {
+//           if (a.item < b.item) {
+//             return -1;
+//           }
+//           if (a.item > b.item) {
+//             return 1;
+//           }
+//           return 0;
+//         });
+//         // console.log('typeList' + typeList);
+//         resolve(null, 'itemList ' + itemList);
+//       } else {
+//         // console.log('typeList', "Failed");
+//         reject("itemList Failed " + ids.length, null);
+//       }
+//     });
+//   });
+// }
+
 //**********************************************************************
 let port = process.env.PORT;
 if (port == null || port == "") {
@@ -73,20 +234,52 @@ if (port == null || port == "") {
 }
 app.listen(port, function() {
   console.log("Site Started Started Successfully");
-  DB.BeginServer();
-  // .then(function(err, il, ml) {
-  //   if (!err) {
-  //     itemList = il;
-  //     mainList = ml;
-  //     console.log("itemList", il);
-  //     console.log("mainList", ml);
-  //   } else {
-  //     console.log(err);
-  //   }
-  // });
+  LoadDB().then(function(err, msg) {
+    if (err) {
+      console.log("LoadDB err", err);
+    } else {
+      // console.log("msg", msg);
+      DBLoadItem().catch(function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+      DBLoadMainList().catch(function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+    }
+  }).then(function(err, msg) {
+    if (err) {
+      console.log("err", err);
+    } else {
+      FillItem().catch(function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+      FillMain().catch(function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+    }
+  }).catch(function(err) {
+    if (err) {
+      console.log("err", err);
+    }
+  });
 });
 
 //**********************************************************************
+// const passValue = {
+//   button: true,
+// buttonLink: "/menu",
+// buttonTitle: "Back",
+// badgelist: null,
+// useChecked: true,
+// }
 app.get("/error", function(req, res) {
   res.render("error.ejs", {
     title: "Bock-b-gock",
@@ -153,53 +346,6 @@ app.all("/menu", function(req, res) {
 
 //**********************************************************************
 
-function DisplayList(res, dltitle, dlbadgelist, dlitemlist, dlusechecked) {
-  // console.log(dlitemlist);
-  res.render("list.ejs", {
-    title: dltitle,
-    buttonOne: buttonOne,
-    buttonTwo: buttonTwo,
-    badgelist: dlbadgelist,
-    useChecked: dlusechecked,
-    list: dlitemlist
-  });
-}
-
-// app.all("/list", function(req, res) {
-//   // if (req.isAuthenticated()){***********
-//   //   res.render("/secrets");**********
-//   // } else {***********
-//   //   res.render("/login");*****************
-//   // }
-//   // var nt = "Bee-gock!";
-//
-//   // if (newTitle.length > 0) {
-//   //   nt = newTitle;
-//   // }
-//   //
-//   // if (listtoAdd.length > 0) {
-//   //   badgeList = listtoAdd;
-//   // }
-//
-//   // if (itemList.length > 0) {
-//   //   displayList = itemList;
-//   // }
-//
-//   // console.log(displayList);
-//
-//   res.render("list.ejs", {
-//     title: newTitle,
-//     buttonOne: buttonOne,
-//     buttonTwo: buttonTwo,
-//     badgelist: badgeList,
-//     useChecked: useChecked,
-//     list: displayList
-//   });
-// });
-
-//**********************************************************************
-
-
 app.all("/title", function(req, res) {
   buttonOne.button = true;
   buttonOne.buttonLink = "/menu";
@@ -230,7 +376,7 @@ app.post("/title/itemlist", function(req, res) {
   } else {
     // console.log("selection", selection);
 
-    DB.Lists.find({
+    MainList.find({
       name: selection
     }, function(err, ids) {
       if (ids.length != 0) {
@@ -238,11 +384,9 @@ app.post("/title/itemlist", function(req, res) {
         console.log("todo: test with a redirect");
         // todo: test with a redirect
       } else {
-        // newTitle = selection;
-        // displayList = itemList;
-        // res.redirect("/list");
-        console.log(itemList);
-        DisplayList(res, selection, null, DB.itemL, true)
+        newTitle = selection;
+        displayList = itemList;
+        res.redirect("/list");
       }
     });
   }
@@ -251,9 +395,9 @@ app.post("/title/itemlist", function(req, res) {
 //**********************************************************************
 
 app.get("/activelist", function(req, res) {
+  console.log("mainList.length", mainList.length);
   // console.log("mainList.length", mainList.length);
-  // console.log("mainList.length", mainList.length);
-  if (DB.mainL.length > 0) {
+  if (mainList.length > 0) {
     buttonOne.button = true;
     buttonOne.buttonTitle = "Back";
     buttonOne.buttonLink = "/menu"
@@ -263,7 +407,7 @@ app.get("/activelist", function(req, res) {
     buttonTwo.buttonLink = "/save/refresh";
 
     displayList.length = 0;
-    DB.mainL.forEach(function(i) {
+    mainList.forEach(function(i) {
       displayList.push(i.name);
       console.log("i.name", i.name);
     });
@@ -293,14 +437,50 @@ app.get("/activelist", function(req, res) {
   }
 });
 
+app.all("/list", function(req, res) {
+  // if (req.isAuthenticated()){***********
+  //   res.render("/secrets");**********
+  // } else {***********
+  //   res.render("/login");*****************
+  // }
+  // var nt = "Bee-gock!";
+
+  // if (newTitle.length > 0) {
+  //   nt = newTitle;
+  // }
+  //
+  // if (listtoAdd.length > 0) {
+  //   badgeList = listtoAdd;
+  // }
+
+  // if (itemList.length > 0) {
+  //   displayList = itemList;
+  // }
+
+  // console.log(displayList);
+
+  res.render("list.ejs", {
+    title: newTitle,
+    buttonOne: buttonOne,
+    buttonTwo: buttonTwo,
+    badgelist: badgeList,
+    useChecked: useChecked,
+    list: displayList
+  });
+});
+
 //**********************************************************************
 
 app.get("/lists/:which", function(req, res) {
   const which = req.params.which;
 
-  DB.mainL.find(function(idx) {
+  mainList.find(function(idx) {
     if (idx.name === which) {
+      displayList = idx.listitem;
+
       newTitle = which;
+      listtoAdd.length = 0;
+
       buttonOne.button = true;
       buttonOne.buttonTitle = "Back";
       buttonOne.buttonLink = "/menu"
@@ -309,52 +489,7 @@ app.get("/lists/:which", function(req, res) {
       buttonTwo.buttonTitle = "Edit";
       buttonTwo.buttonLink = "/list/edit"
 
-      // console.log("idx.listitem", idx.listitem);
-      DisplayList(res, which, null, idx.listitem, false);
-      // displayList = idx.listitem;
-      //
-      // newTitle = which;
-      // listtoAdd.length = 0;
-      //
-      // buttonOne.button = true;
-      // buttonOne.buttonTitle = "Back";
-      // buttonOne.buttonLink = "/menu"
-      //
-      // buttonTwo.button = true;
-      // buttonTwo.buttonTitle = "Edit";
-      // buttonTwo.buttonLink = "/list/edit"
-      //
-      // res.redirect("/list");
-    }
-  });
-});
-
-app.get("/list/edit", function(req, res) {
-  DB.mainL.find(function(idx) {
-    if (idx.name === newTitle) {
-
-      buttonOne.button = true;
-      buttonOne.buttonTitle = "Back";
-      buttonOne.buttonLink = "#" // back to list display
-
-      buttonTwo.button = true;
-      buttonTwo.buttonTitle = "Save";
-      buttonTwo.buttonLink = "#" // this gets called somewhere else, but needs to update, new function?
-
-      console.log("idx.listitem", idx.listitem);
-
-      const templist = DB.itemL;
-      templist.forEach(function(cl) {
-        idx.listitem.forEach(function(bdg) {
-          if (bdg.item === cl.item) {
-            console.log("bdg.item",bdg.item);
-            cl.checked = true;
-          }
-        });
-      });
-
-      // console.log("idx.listitem", idx.listitem);
-      DisplayList(res, newTitle, idx.listitem, templist, true);
+      res.redirect("/list");
     }
   });
 });
@@ -417,6 +552,14 @@ app.post("/item/newItem", function(req, res) {
     console.log("Quantity was to low");
 
     ///****************** todo fix this, cant redirect from post to get
+    // buttonOne.button = true;
+    // buttonOne.buttonTitle = "Back";
+    // buttonOne.buttonLink = "/quantity"
+    //
+    // alertTitle = "Alert";
+    // alertMessage = "Quantity of " + qty + " was too low";
+    //
+    // res.redirect("/alert");
   }
   // call redirect back to full list
 

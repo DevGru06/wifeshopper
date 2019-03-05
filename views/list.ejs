@@ -2,20 +2,20 @@
 
 <main role="main" class="container">
 
-  <div class="">
-
-  </div>
   <!-- search box -->
   <div class="accordion" id="accordionExample">
     <div class="card">
       <div class="marginBgone card-header" id="headingOne">
-        <!-- <h2 class="mb-0"> -->
-        <button class="card-button btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        <button class="card-button btn btn-link" type="button" data-toggle="collapse" data-target="#collapseSearch" aria-expanded="true" aria-controls="collapseSearch">
           Search
         </button>
-        <!-- </h2> -->
+        <% if(badgelist != null) { %>
+        <button class="card-button btn btn-link" type="button" data-toggle="collapse" data-target="#collapseShoppingList" aria-expanded="true" aria-controls="collapseShoppingList">
+          Shopping List
+        </button>
+      <% } %>
       </div>
-      <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+      <div id="collapseSearch" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
         <div class="marginBgone card-body">
           <form class="marginBgone form-inline my-2 my-lg-0">
             <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
@@ -23,99 +23,96 @@
           </form>
         </div>
       </div>
-    </div>
+    </div> <!-- search box -->
+
     <% if(badgelist != null) { %>
-    <div class="card">
-      <div class="marginBgone card-header" id="headingTwo">
-        <h2 class="mb-0">
-          <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-          </button>
-        </h2>
-      </div>
-      <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
-        <div class="marginBgone card-body">
-          <% badgelist.forEach(function(bl) { %>
-          <span class="badge badge-primary">
-            <%= bl.item %>
-            <input class="smBD" type="button" src="sort-26.png" onChange="this.form.submit()"></span>
+    <div class="collapse.show" id="collapseShoppingList">
+      <div class="card card-body">
+        <div class="">
+          <% badgelist.forEach(function(i) { %>
+            <% switch(i.type){ case "Produce": %>
+            <span class="badge badge-primary"><%=i.item %> <span class="badge badge-light">10</span></span>
+            <% break; case "Meat":  %>
+            <span class="badge badge-secondary"><%=i.item %> <span class="badge badge-light">10</span></span>
+            <% break; case "Food": %>
+            <span class="badge badge-success"><%=i.item %> <span class="badge badge-light">10</span></span>
+            <% break; case "Ingredients": %>
+            <span class="badge badge-danger"><%=i.item %> <span class="badge badge-light">10</span></span>
+            <% break; case "Dairy":  %>
+            <span class="badge badge-warning"><%=i.item %> <span class="badge badge-light">10</span></span>
+            <% break; case "Snack":  %>
+            <span class="badge badge-info"><%=i.item %> <span class="badge badge-light">10</span></span>
+            <% break; case "House Stuff":  %>
+            <span class="badge badge-light"><%=i.item %> <span class="badge badge-light">10</span></span>
+            <% break; case "Drink":  %>
+            <span class="badge badge-dark"><%=i.item %> <span class="badge badge-light">10</span></span>
+            <% break; default: %>
+            <span class="badge badge-primary"><%=i.item %> <span class="badge badge-light">10</span></span>
+            <% } %>
           <% }); %>
         </div>
       </div>
     </div>
     <% } %>
 
-    <!-- <form class="form-inline my-2 my-lg-0">
-    <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
-    <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
-  </form> -->
+  </div>   <!--  accordion -->
 
-    <% if(badgelist != null) { %>
-    <% badgelist.forEach(function(bl) { %>
-    <span class="badge badge-primary">
-      <%= bl.item %>
-      <input class="smBD" type="button" src="sort-26.png" onChange="this.form.submit()"></span>
-    <% }); %>
-    <% } %>
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <%if(useChecked){ %>
+        <th class="item-header">
+          Add
+        </th>
+        <% } %>
 
-    <table class="table table-striped table-sm">
-      <thead>
-        <tr>
-          <th class="item-header">
-            Add
-          </th>
-          <form class="header" action="/sortMe" method="post">
-            <th class="item" >Item
-              <button class="btn btn-primary sm" type="submit" name="title" value="1"><img class="img-sm" src="sort-26.png" alt="SomeAlternateText"></button>
-              <!-- <button type="button" class="btn btn-primary btn-sm" type="submit"><img class="sm" src="sort-26.png"></button></th> -->
-              <!-- <input class="sm" type="image" name="title" value="2" src="sort-26.png" onClick="this.form.submit()"> -->
-          <!-- </form>
-          <form class="header" action="/sortcol3" method="post"> -->
-            <th class="type" name="col">Type
-              <!-- <button type="button" class="btn btn-primary btn-sm" type="submit"><img class="sm" src="sort-26.png"></button></th> -->
-              <button class="btn btn-primary sm" type="submit" name="title" value="2"><img class="img-sm" src="sort-26.png" alt="SomeAlternateText"></button>
-              <!-- <input class="sm" type="image" src="sort-26.png" alt="submit"> -->
-          </form>
-          <!-- <th>Item</th> -->
-          <!-- <th>Type</th> -->
-        </tr>
-      </thead>
-      <tbody>
-        <% if(list != null) { %>
-        <% list.forEach(function(i) { %>
-        <% if(!i.checked) { %>
-        <tr>
-          <form class="useChecked" action="/add" method="post">
-            <td>
-              <% if( useChecked ) { %>
-              <input class="inputCheckbox" type="checkbox" name="checkbox" onChange="this.form.submit()" value=<%= i._id %>>
-
-              <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal"> -->
-              <!-- Launch demo modal
-          </button> -->
-
-              <% } %>
-            </td>
-            <td>
-              <%=i.item%>
-            </td>
-            <td>
-              <%=i.type%>
-            </td>
-          </form>
+        <form class="header" action="/list/sortMe" method="post">
+          <th class="item">Item
+            <button class="btn btn-primary sm" type="submit" name="title" value="1"><img class="img-sm" src="/sort-26.png" alt="SomeAlternateText"></button>
+          <th class="type" name="col">Type
+            <button class="btn btn-primary sm" type="submit" name="title" value="2"><img class="img-sm" src="/sort-26.png" alt="SomeAlternateText"></button>
+        </form>
+      </tr>
+    </thead>
+    <tbody>
+      <% if(list != null) { %>
+      <% list.forEach(function(i) { %>
+      <% if(!i.checked) { %>
+      <tr>
+        <form class="useChecked" action="/item/add" method="post">
+          <% if( useChecked ) { %>
+          <td>
+            <input class="inputCheckbox" type="checkbox" name="checkbox" onChange="this.form.submit()" value=<%=i._id %>>
+          </td>
           <% } %>
-          <% });} %>
-      </tbody>
-    </table>
 
-    <!-- list box -->
-    <!-- <ul class="list-group">
-    <li class="list-group-item">Cras justo odio</li>
-    <li class="list-group-item">Dapibus ac facilisis in</li>
-    <li class="list-group-item">Morbi leo risus</li>
-    <li class="list-group-item">Porta ac consectetur ac</li>
-    <li class="list-group-item">Vestibulum at eros</li>
-  </ul> -->
+          <%if(useChecked){ %>
+          <td>
+            <%=i.item%>
+          </td>
+          <%  } else { %>
+          <td>
+            <a class="nav-link" href="#">
+              <%=i.item%>
+            </a>
+          </td>
+          <%  } %>
 
+          <%if(i.type){ %>
+          <td>
+            <%=i.type%>
+          </td>
+          <%  } else { %>
+          <td>
+              <%=i.quantity%>
+          </td>
+          <%  } %>
+
+        </form>
+        <% } %>
+        <% });} %>
+    </tbody>
+  </table>
 </main><!-- /.container -->
 
 <%- include("footer") -%>
