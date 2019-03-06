@@ -40,8 +40,36 @@ module.exports = {
   Items: Item,
   Lists: MainList,
 
+  Save: function(title, badgelist) {
+    const newb = new MainList();
+    console.log(title, badgelist);
+
+    newb.name = title;
+    newb.createdDate = Date.now();
+    newb.checkedDate = new Date(1111, 11, 11)
+    newb.closed = false;
+    newb.listitem = badgelist;
+    newb.save();
+  },
+
+  // todo something to add/remove and update
+
   mainL: mainList,
   itemL: itemList,
+
+  RefreshServer: function() {
+    FillItem().catch(function(err) {
+      if (err) {
+        console.log(err);
+      }
+    });
+    // console.log("FillMain");
+    FillMain().catch(function(err) {
+      if (err) {
+        console.log(err);
+      }
+    });
+  },
 
   BeginServer: function() {
     return new Promise(function(resolve, reject) {
