@@ -10,3 +10,11 @@ item State
 :::::::FIX ME:::::::
 
 badge list quantity doesnt work
+
+
+<a href="/item/remove" class="badge badge-primary" name="button" value=<%=i._id %>>
+  <%=i.item %>
+  <span class="badge badge-light">
+    <%=i.quantity %>
+  </span>
+</a>

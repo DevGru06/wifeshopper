@@ -6,13 +6,21 @@ const itemSchema = new mongoose.Schema({
   type: String
 });
 
+const listitem = new mongoose.Schema({
+    itemID: String,
+    item: String,
+    quantity: Number,
+    type: String
+});
 const mainlistSchema = new mongoose.Schema({
   name: String,
   createdDate: Date,
   checkedDate: Date,
   closed: Boolean,
-  listitem: {}
+  listitem: [listitem]
 });
+
+
 
 const Item = mongoose.model("items", itemSchema);
 const MainList = new mongoose.model("MainList", mainlistSchema);
@@ -41,15 +49,32 @@ module.exports = {
   Lists: MainList,
 
   Save: function(title, badgelist) {
-    const newb = new MainList();
-    console.log(title, badgelist);
+    return new Promise(function(resolve, reject) {
+      // const newb = new MainList();
+      // console.log("data-Save", badgelist);
+      // newb.name = title;
+      // newb.createdDate = Date.now();
+      // newb.checkedDate = new Date(1111, 11, 11);
+      // newb.closed = false;
+      // newb.listitem = badgelist;
 
-    newb.name = title;
-    newb.createdDate = Date.now();
-    newb.checkedDate = new Date(1111, 11, 11)
-    newb.closed = false;
-    newb.listitem = badgelist;
-    newb.save();
+      if (badgelist.length > 0) {
+        const newb = new MainList({
+          name: title,
+          createdDate: Date.now(),
+          checkedDate: new Date(1111, 11, 11),
+          closed: false,
+          listitem: badgelist,
+        });
+        newb.markModified('listitem');
+        newb.save();
+
+        resolve(newb);
+      } else {
+        // reject("badgelist Zero");
+      }
+    });
+
   },
 
   // todo something to add/remove and update
@@ -111,13 +136,13 @@ module.exports = {
             }
           });
         }
-      // }).then(function() {
-      //   setTimeout(function() {
-      //     // console.log("resolve");
-      //     // console.log("itemList", itemList);
-      //     // console.log("mainList", mainList);
-      //     return resolve(null, itemList, mainList);
-      //   }, 3000);
+        // }).then(function() {
+        //   setTimeout(function() {
+        //     // console.log("resolve");
+        //     // console.log("itemList", itemList);
+        //     // console.log("mainList", mainList);
+        //     return resolve(null, itemList, mainList);
+        //   }, 3000);
       }).catch(function(err) {
         if (err) {
           console.log("err", err);
@@ -174,7 +199,7 @@ function FillMain() {
 
     MainList.find({}, function(err, ids) {
       // console.log('ids', ids.length);
-
+      mainList.length = 0;
       if (ids.length != 0) {
         ids.forEach(function(i) {
           const mulval = {
@@ -201,6 +226,7 @@ function FillItem() {
   return new Promise(function(resolve, reject) {
     Item.find({}, function(err, ids) {
       if (ids.length != 0) {
+        itemList.length = 0;
         ids.forEach(function(i) {
 
           if (i.item.length > 0) {

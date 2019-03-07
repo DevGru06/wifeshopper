@@ -80,9 +80,9 @@ const viewState = [];
 var CurrTitle = "";
 var CurrBadge = [];
 var CurrList = [];
+var TempBadge = [];
 
 var ListOLists = [];
-
 
 //**********************************************************************
 let port = process.env.PORT;
@@ -148,8 +148,15 @@ app.post("/register", function(req, res) {
 });
 
 //**********************************************************************
-
+// comes from: <GOING TO CHANGE>.EJS
+// goes to: MENU.EJS
+// gets info: NONE
 app.all("/menu", function(req, res) {
+
+  CurrTitle = "";
+  CurrBadge.length = 0;
+  CurrList.length = 0;
+  TempBadge.length = 0;
 
   const page = {
     page: "menu.ejs",
@@ -174,55 +181,7 @@ app.all("/menu", function(req, res) {
     pInfo: page
   });
 });
-
 //**********************************************************************
-
-function DisplayList(res, dltitle, dlbadgelist, dlitemlist, dlusechecked) {
-  // console.log(dlitemlist);
-  res.render("list.ejs", {
-    title: dltitle,
-    buttonOne: buttonOne,
-    buttonTwo: buttonTwo,
-    badgelist: dlbadgelist,
-    useChecked: dlusechecked,
-    list: dlitemlist
-  });
-}
-
-// app.all("/list", function(req, res) {
-//   // if (req.isAuthenticated()){***********
-//   //   res.render("/secrets");**********
-//   // } else {***********
-//   //   res.render("/login");*****************
-//   // }
-//   // var nt = "Bee-gock!";
-//
-//   // if (newTitle.length > 0) {
-//   //   nt = newTitle;
-//   // }
-//   //
-//   // if (listtoAdd.length > 0) {
-//   //   badgeList = listtoAdd;
-//   // }
-//
-//   // if (itemList.length > 0) {
-//   //   displayList = itemList;
-//   // }
-//
-//   // console.log(displayList);
-//
-//   res.render("list.ejs", {
-//     title: newTitle,
-//     buttonOne: buttonOne,
-//     buttonTwo: buttonTwo,
-//     badgelist: badgeList,
-//     useChecked: useChecked,
-//     list: displayList
-//   });
-// });
-
-//**********************************************************************
-
 // comes from: MENU.EJS
 // goes to: TITLE.EJS
 // gets info: NONE
@@ -245,7 +204,7 @@ app.all("/title", function(req, res) {
     bdList: null,
     List: null
   }
-  console.log("title", page);
+  // console.log("title", page);
   res.render("title.ejs", {
     pInfo: page
   });
@@ -272,7 +231,7 @@ app.post("/title/itemlist", function(req, res) {
           alert: "",
           btOne: {
             button: true,
-            buttonLink: "/Back",
+            buttonLink: "/menu",
             buttonTitle: "Back"
           },
           btTwo: {
@@ -284,7 +243,7 @@ app.post("/title/itemlist", function(req, res) {
           bdList: null,
           List: CurrList
         }
-        console.log("itemlist", page);
+        // console.log("itemlist", page);
         res.render("list.ejs", {
           pInfo: page
         });
@@ -297,44 +256,49 @@ app.post("/title/itemlist", function(req, res) {
 // gets info: Item to add - edits CurrList.checked
 app.post('/item/add', function(req, res) {
   const selection = req.body.checkbox;
+  var title = "";
 
   if (selection.length > 0) {
     if (CurrList != null) {
       CurrList.find(function(found) {
-        if (found.item == selection) {
+        if (found._id.toString() === selection) {
           found.checked = true;
-          const addvar = {
+          newvar = {
+            itemID: found._id,
             item: found.item,
             quantity: 0,
             type: found.type
           }
-          CurrBadge.push(addvar);
+          TempBadge = newvar;
+          title = found.item;
+
+          const page = {
+            page: "quantity.ejs",
+            title: title,
+            alert: "",
+            btOne: {
+              button: true,
+              buttonLink: "back",
+              buttonTitle: "Back"
+            },
+            btTwo: {
+              button: false,
+              buttonLink: "",
+              buttonTitle: ""
+            },
+            useChecked: false,
+            bdList: null,
+            List: CurrList
+          }
+          // console.log("add", page);
+          res.render("quantity.ejs", {
+            pInfo: page
+          });
         }
       });
     }
-    const page = {
-      page: "quantity.ejs",
-      title: selection,
-      alert: "",
-      btOne: {
-        button: true,
-        buttonLink: "/Back",
-        buttonTitle: "Back"
-      },
-      btTwo: {
-        button: false,
-        buttonLink: "",
-        buttonTitle: ""
-      },
-      useChecked: false,
-      bdList: null,
-      List: CurrList
-    }
-    console.log("add", page);
-    res.render("quantity.ejs", {
-      pInfo: page
-    });
   }
+  // console.log(selection + " not found");
 });
 // comes from: QUANTITY.EJS
 // goes to: LIST.EJS
@@ -343,11 +307,21 @@ app.post("/item/newItem", function(req, res) {
   const qty = req.body.title;
 
   if (qty > 0) {
-    const tv = CurrBadge[CurrBadge.length - 1];
-    console.log("add-qty", qty);
-    console.log("add-badge", tv);
+    // const tv = CurrBadge[CurrBadge.length - 1];
+    TempBadge.quantity = qty;
+    CurrBadge.push(TempBadge);
 
-    tv.quantity = qty;
+    // console.log("add-TempBadge", TempBadge);
+    // console.log("add-badge", tv);
+
+    TempBadge = [];
+    // TempBadge.item= "";
+    // TempBadge.quantity= 0;
+    // TempBadge.type= "";
+
+    console.log("add-TempBadge-clear", TempBadge);
+
+    // tv.quantity = qty;
 
     const page = {
       page: "list.ejs",
@@ -367,7 +341,7 @@ app.post("/item/newItem", function(req, res) {
       bdList: CurrBadge,
       List: CurrList
     }
-    console.log("newitem", page);
+    // console.log("newitem", page);
     res.render("list.ejs", {
       pInfo: page
     });
@@ -377,14 +351,23 @@ app.post("/item/newItem", function(req, res) {
 // goes to: LIST.EJS
 // gets info: Saves the whole list
 app.all("/save/list", function(req, res) {
-  // console.log(CurrTitle, CurrBadge);
-  DB.Save(CurrTitle, CurrBadge);
+  console.log("CurrBadge", CurrBadge);
+  DB.Save(CurrTitle, CurrBadge).then(function(confirm) {
+    console.log("savelist-confirm", confirm);
+  }).catch(function(err) {
+    if(err){
+      console.log("/save/list", err);
+    }
+  });
   CurrTitle = "";
   CurrBadge.length = 0;
   CurrList.length = 0;
   res.redirect("/menu");
 });
 //**********************************************************************
+// comes from: MENU.EJS
+// goes to: ALTLIST.EJS
+// gets info: None
 app.get("/activelist", function(req, res) {
   ListOLists.length = 0;
 
@@ -419,15 +402,19 @@ app.get("/activelist", function(req, res) {
     // alert or error
   }
 });
-//**********************************************************************
+// comes from: ALTLIST.EJS
+// goes to: LIST.EJS
+// gets info: None
 app.get("/lists/:which", function(req, res) {
   const which = req.params.which;
-
+  CurrTitle = which;
   DB.mainL.find(function(idx) {
+    CurrList = idx.listitem.slice();
+
     if (idx.name === which) {
       const page = {
         page: "list.ejs",
-        title: which,
+        title: CurrTitle,
         alert: "",
         btOne: {
           button: true,
@@ -441,50 +428,64 @@ app.get("/lists/:which", function(req, res) {
         },
         useChecked: false,
         bdList: null,
-        List: idx.listitem
+        List: CurrList
       }
-
-      viewState.push(viewState);
-
       res.render("list.ejs", {
         pInfo: page
       });
     }
   });
 });
+// comes from: ALTLIST.EJS
+// goes to: LIST.EJS
+// gets info: None
 app.get("/list/edit", function(req, res) {
   DB.mainL.find(function(idx) {
-    if (idx.name === newTitle) {
+    if (idx.name === CurrTitle) {
 
-      buttonOne.button = true;
-      buttonOne.buttonTitle = "Back";
-      buttonOne.buttonLink = "#" // back to list display
-
-      buttonTwo.button = true;
-      buttonTwo.buttonTitle = "Save";
-      buttonTwo.buttonLink = "#" // this gets called somewhere else, but needs to update, new function?
-
-      console.log("idx.listitem", idx.listitem);
-
-      const templist = DB.itemL;
-      templist.forEach(function(cl) {
-        idx.listitem.forEach(function(bdg) {
+      const templist = DB.itemL.slice();
+      templist.forEach(function(cl) { // full list
+        idx.listitem.forEach(function(bdg) { // list from selection (Badge)
           if (bdg.item === cl.item) {
-            console.log("bdg.item", bdg.item);
-            cl.checked = true;
+            cl.checked = true; // set those in main list to checked
           }
         });
       });
 
-      // console.log("idx.listitem", idx.listitem);
-      DisplayList(res, newTitle, idx.listitem, templist, true);
+      CurrList = templist;
+      CurrBadge = idx.listitem;
+
+      const page = {
+        page: "list.ejs",
+        title: CurrTitle,
+        alert: "",
+        btOne: {
+          button: true,
+          buttonLink: "#",// back to list display
+          buttonTitle: "Back"
+        },
+        btTwo: {
+          button: true,
+          buttonLink: "#",// this gets called somewhere else, but needs to update, new function?
+          buttonTitle: "Save"
+        },
+        useChecked: true,
+        bdList: CurrBadge,
+        List: CurrList
+      }
+      res.render("list.ejs", {
+        pInfo: page
+      });
     }
   });
 });
 
+app.post('/item/remove', function(req, res) {
+  const selection = req.body.badge;
+  console.log("selection", selection);
+});
+
 app.get("/save/refresh", function(req, res) {
-  // DBLoadMainList();
-  // FillMain();
   DB.RefreshServer();
   if (DB.mainL.length > 0) {
     DB.mainL.forEach(function(i) {
