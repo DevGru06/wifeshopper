@@ -461,12 +461,12 @@ app.get("/list/edit", function(req, res) {
         alert: "",
         btOne: {
           button: true,
-          buttonLink: "#",// back to list display
+          buttonLink: "/menu",// back to list display
           buttonTitle: "Back"
         },
         btTwo: {
           button: true,
-          buttonLink: "#",// this gets called somewhere else, but needs to update, new function?
+          buttonLink: "/save/list",// this gets called somewhere else, but needs to update, new function?
           buttonTitle: "Save"
         },
         useChecked: true,
